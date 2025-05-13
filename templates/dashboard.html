@@ -1,0 +1,56 @@
+{% extends "base.html" %} {% block title %}Dashboard - Reportes{% endblock %} {%
+block content %}
+<div class="container mt-4">
+  <h2>Dashboard de Reportes</h2>
+  <p>Bienvenido, {{ current_user.username }}!</p>
+
+  <!-- Formulario de Búsqueda -->
+  <form method="GET" action="{{ url_for('views.dashboard') }}" class="mb-3">
+    <div class="input-group">
+      <input
+        type="text"
+        class="form-control"
+        id="search-input"
+        name="search"
+        placeholder="Buscar por cliente o contenido..."
+        value="{{ search_term or '' }}"
+      />
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+      </div>
+    </div>
+  </form>
+
+  <div id="reports-table-container">
+    <!-- Contenedor para la tabla -->
+    {% include '_report_table.html' %}
+    <!-- Incluir la tabla inicialmente -->
+  </div>
+</div>
+
+{% endblock %} {% block scripts %}
+<!-- Bloque para scripts específicos de la página -->
+<script>
+  function fetchReportsTable() {
+      const searchInputValue = document.getElementById('search-input').value;
+      let url = "{{ url_for('views.get_reports_table_ajax') }}";
+      if (searchInputValue) {
+          url += "?search=" + encodeURIComponent(searchInputValue);
+      }
+
+      fetch(url)
+          .then(response => response.text())
+          .then(html => {
+              document.getElementById('reports-table-container').innerHTML = html;
+          })
+          .catch(error => console.error('Error al actualizar la tabla de reportes:', error));
+  }
+
+  // Actualizar la tabla cada 10 segundos
+  setInterval(fetchReportsTable, 10000);
+
+  // Opcional: Cargar la tabla inmediatamente al cargar la página (además del include)
+  // document.addEventListener('DOMContentLoaded', fetchReportsTable);
+  {# No es estrictamente necesario si ya usas {% include ... %} para la carga inicial. #}
+</script>
+{% endblock %}
